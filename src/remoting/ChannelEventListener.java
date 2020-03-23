@@ -2,6 +2,9 @@ package remoting;
 
 import io.netty.channel.Channel;
 
+/**
+ * @author 17194
+ */
 public interface ChannelEventListener {
     void onChannelConnect(final String remoteAddr, final Channel channel);
 

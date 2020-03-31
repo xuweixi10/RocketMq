@@ -1,19 +1,18 @@
 package common;
 
 import common.annotation.ImportantField;
+import common.help.FAQURL;
 import org.slf4j.Logger;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.InetSocketAddress;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MixAll {
     public static final String ROCKETMQ_HOME_ENV = "ROCKETMQ_HOME";
@@ -44,7 +43,7 @@ public class MixAll {
     public static final String CID_ONSAPI_PULL_GROUP = "CID_ONSAPI_PULL";
     public static final String CID_RMQ_SYS_PREFIX = "CID_RMQ_SYS_";
 
-    public static final List<String> LOCAL_INET_ADDRESS = getLocalInetAddress();
+    //public static final List<String> LOCAL_INET_ADDRESS = getLocalInetAddress();
     public static final String LOCALHOST = localhost();
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long MASTER_ID = 0L;
@@ -57,7 +56,12 @@ public class MixAll {
     public static final String UNIQUE_MSG_QUERY_FLAG = "_UNIQUE_KEY_QUERY";
     public static final String DEFAULT_TRACE_REGION_ID = "DefaultRegion";
     public static final String CONSUME_CONTEXT_TYPE = "ConsumeContextType";
-    //获取重试的Topic
+
+    /**获取重试的Topic
+     *
+     * @param consumerGroup
+     * @return
+     */
     public static String getRetryTopic(final String consumerGroup){
         return RETRY_GROUP_TOPIC_PREFIX+consumerGroup;
     }
@@ -332,4 +336,199 @@ public class MixAll {
 
         return properties;
     }
+
+    public static Properties object2Properties(final Object object){
+        Properties properties=new Properties();
+        Field[] fields=object.getClass().getDeclaredFields();
+        for(Field field:fields){
+            if(Modifier.isStatic(field.getModifiers())){
+                String name=field.getName();
+                if(!name.startsWith("this")){
+                    Object value=null;
+                    try {
+                        field.setAccessible(true);
+                        value=field.get(object);
+                    }catch (IllegalArgumentException | IllegalAccessException e){
+                        e.printStackTrace();
+                    }
+
+                    if(value!=null){
+                        properties.setProperty(name,value.toString());
+                    }
+                }
+            }
+        }
+        return properties;
+    }
+
+    /**
+     * 将参数注入到类的set方法中，完成参数的初始化
+     * @param properties
+     * @param object
+     */
+    public static void properties2Object(final Properties properties,final Object object) {
+        Method[] methods = object.getClass().getMethods();
+        for (Method method : methods) {
+            String mn = method.getName();
+            if (mn.startsWith("set")) {
+                try {
+                    //判断是否以set开头
+                    String tmp = mn.substring(4);
+                    String first = mn.substring(3, 4);
+                    //setArgs转换为args
+                    String key = first.toLowerCase() + tmp;
+
+                    String property = properties.getProperty(key);
+                    if (property != null) {
+                        //获取方法的参数列表
+                        Class<?>[] pt = method.getParameterTypes();
+                        if (pt != null && pt.length > 0) {
+                            //第一个参数，
+                            String cn = pt[0].getSimpleName();
+                            Object arg = null;
+                            if (cn.equals("int") || cn.equals("Integer")) {
+                                arg = Integer.parseInt(property);
+                            } else if (cn.equals("long") || cn.equals("Long")) {
+                                arg = Long.parseLong(property);
+                            } else if (cn.equals("double") || cn.equals("Double")) {
+                                arg = Double.parseDouble(property);
+                            } else if (cn.equals("boolean") || cn.equals("Boolean")) {
+                                arg = Boolean.parseBoolean(property);
+                            } else if (cn.equals("float") || cn.equals("Float")) {
+                                arg = Float.parseFloat(property);
+                            } else if (cn.equals("String")) {
+                                arg = property;
+                            } else {
+                                continue;
+                            }
+                            method.invoke(object, arg);
+                        }
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+    }
+
+    /**
+     * 判断两个属性对象是否相等
+     * @param p1 属性1
+     * @param p2 属性2
+     * @return 是否相等
+     */
+    public static boolean isPropertiesEqual(final Properties p1, final Properties p2) {
+        return p1.equals(p2);
+    }
+
+    /**
+     * 获取本机的网络地址
+     * @return 本机网络地址
+     */
+    public static List<String> getLocalInetAddress(){
+        List<String> inetAddressList=new ArrayList<String>();
+        try {
+            //获取本机所有的网络接口
+            Enumeration<NetworkInterface> enumeration=NetworkInterface.getNetworkInterfaces();
+            while(enumeration.hasMoreElements()){
+                NetworkInterface networkInterface=enumeration.nextElement();
+                Enumeration<InetAddress> addres=networkInterface.getInetAddresses();
+                while (addres.hasMoreElements()){
+                    //主机名传入
+                    inetAddressList.add(addres.nextElement().getHostName());
+                }
+            }
+        }catch (SocketException e){
+            throw new RuntimeException("get local inet Address fail",e);
+        }
+        return inetAddressList;
+    }
+
+    /**
+     * 判断是否为本机地址
+     * @param address 网络地址
+     * @return
+    public static boolean isLocalAddr(String address){
+        for(String addr:LOCAL_INET_ADDRESS){
+            if(address.contains(addr)){
+                return true;
+            }
+        }
+        return false;
+    }
+    */
+
+    /**
+     * 确保target只能增长
+     * @param target 目标
+     * @param value 值
+     * @return 是否增长
+     */
+    public static boolean compareAndIncreaseOnly(final AtomicLong target,final long value){
+        long prev=target.get();
+        while (value > prev){
+            boolean update=target.compareAndSet(prev,value);
+            if(update){
+                return true;
+            }
+            prev=target.get();
+        }
+        return false;
+    }
+
+    /**
+     * 获取本机地址
+     * @return 地址
+     */
+    public static String localhost(){
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        }catch (UnknownHostException e){
+            throw new RuntimeException("InetAddress java.net.InetAddress.getLocalHost() throws UnknownHostException"
+                    + FAQURL.suggestTodo(FAQURL.UNKNOWN_HOST_EXCEPTION),
+                    e);
+        }
+    }
+
+    /**
+     * 把字节数装换为可以读懂的单位，
+     * @param bytes 字节数
+     * @param si 单位为1000还是1024
+     * @return
+     */
+    public static String humanReadableByteCount(long bytes,boolean si){
+        int unit=si?1000:1024;
+        if(bytes<unit){
+            return bytes+"B";
+        }
+        int exp=(int)(Math.log(bytes)/Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    /**
+     * list装换为set
+     * @param values
+     * @return
+     */
+    public Set<String> list2Set(List<String> values) {
+        Set<String> result = new HashSet<String>();
+        for (String v : values) {
+            result.add(v);
+        }
+        return result;
+    }
+
+    /**
+     * set装换为list
+     * @param values
+     * @return
+     */
+    public List<String> set2List(Set<String> values) {
+        List<String> result = new ArrayList<String>();
+        for (String v : values) {
+            result.add(v);
+        }
+        return result;
+    }
+
 }

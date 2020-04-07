@@ -1,11 +1,13 @@
 package broker;
 
+import broker.offset.ConsumerOffsetManager;
 import common.BrokerConfig;
 import common.constant.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import remoting.netty.NettyClientConfig;
 import remoting.netty.NettyServerConfig;
+import store.config.MessageStoreConfig;
 
 public class BrokerController {
     /**
@@ -25,6 +27,8 @@ public class BrokerController {
      */
     private final NettyServerConfig nettyServerConfig;
     private final NettyClientConfig nettyClientConfig;
+    private final MessageStoreConfig messageStoreConfig;
+    private final ConsumerOffsetManager consumerOffsetManager;
     public BrokerController(//
                             final BrokerConfig brokerConfig, //
                             final NettyServerConfig nettyServerConfig, //

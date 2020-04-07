@@ -9,10 +9,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="slf4j-jdk14-1.5.6" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.26" level="project" />
     <orderEntry type="library" name="Maven: org.assertj:assertj-core:3.11.1" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-all:4.1.6.Final" level="project" />
     <orderEntry type="library" name="Maven: org.junit:com.springsource.org.junit:4.8.2" level="project" />
-    <orderEntry type="library" name="slf4j-jdk14-1.5.6" level="project" />
+    <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.9" level="project" />
   </component>
 </module>

@@ -1,5 +1,8 @@
 package remoting.netty;
 
+/**
+ * 客户端网络配置
+ */
 public class NettyClientConfig {
     /**
      * 1 客户端工作的线程个数

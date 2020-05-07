@@ -1,5 +1,17 @@
 package common.constant;
 
+/**
+ * @author xuxiaoxi10
+ * @version 1.0
+ * @date 2020/4/25 8:07
+ *
+ * permission name
+ * PRIORITY permission 1000
+ * READ permission 0100
+ * WRITE permission 0010
+ * INHERIT permission 0001
+ * like P R W I
+ */
 public class PermName {
     public static final int PERM_PRIORITY = 0x1 << 3;
     public static final int PERM_READ = 0x1 << 2;

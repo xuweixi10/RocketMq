@@ -15,5 +15,6 @@
     <orderEntry type="library" name="Maven: io.netty:netty-all:4.1.6.Final" level="project" />
     <orderEntry type="library" name="Maven: org.junit:com.springsource.org.junit:4.8.2" level="project" />
     <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.9" level="project" />
+    <orderEntry type="library" name="Maven: com.anaptecs.jeaf.owalibs:org.apache.commons.cli:4.3.1" level="project" />
   </component>
 </module>

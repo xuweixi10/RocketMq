@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConsumerGroupInfo {
     private static final Logger log= LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final String groupName;
+    //topic-data
     private final ConcurrentHashMap<String, SubscriptionData> subscriptionTable=
             new ConcurrentHashMap<>(16);
     private final ConcurrentHashMap<Channel,ClientChannelInfo> channelInfoTable=
@@ -34,12 +35,11 @@ public class ConsumerGroupInfo {
     private volatile long lastUpdateTimestamp = System.currentTimeMillis();
 
     public ConsumerGroupInfo(String groupName, ConsumeType consumeType, MessageModel messageModel
-            , ConsumeFromWhere consumeFromWhere, long lastUpdateTimestamp) {
+            , ConsumeFromWhere consumeFromWhere) {
         this.groupName = groupName;
         this.consumeType = consumeType;
         this.messageModel = messageModel;
         this.consumeFromWhere = consumeFromWhere;
-        this.lastUpdateTimestamp = lastUpdateTimestamp;
     }
 
     /**

@@ -1,5 +1,7 @@
 package broker;
 
+import broker.client.ConsumerManager;
+import broker.client.ProducerManager;
 import broker.offset.ConsumerOffsetManager;
 import common.BrokerConfig;
 import common.constant.LoggerName;
@@ -29,6 +31,8 @@ public class BrokerController {
     private final NettyClientConfig nettyClientConfig;
     private final MessageStoreConfig messageStoreConfig;
     private final ConsumerOffsetManager consumerOffsetManager;
+    private final ConsumerManager consumerManager;
+    private final ProducerManager producerManager;
     public BrokerController(//
                             final BrokerConfig brokerConfig, //
                             final NettyServerConfig nettyServerConfig, //

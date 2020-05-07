@@ -9,6 +9,11 @@ public class RemotingHelper {
     public static final String ROCKETMQ_REMOTING="RocketmqRemoting";
     public static final String DEFAULT_CHARSET="UTF-8";
 
+    /**
+     * 返回对应的异常类型和调用堆栈
+     * @param e 异常
+     * @return 异常类型,调用堆栈
+     */
     public static String expectionSimpleDsec(final Throwable e){
         StringBuffer sb=new StringBuffer();
         if(e!=null){
@@ -24,6 +29,11 @@ public class RemotingHelper {
         return sb.toString();
     }
 
+    /**
+     * 字符串转网络地址
+     * @param addr 地址
+     * @return
+     */
     public static SocketAddress string2SocketAddress(final String addr){
         String[] s=addr.split(":");
         InetSocketAddress isa=new InetSocketAddress(s[0],Integer.parseInt(s[1]));
